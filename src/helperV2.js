@@ -2,10 +2,6 @@ import { signSendChunkv1 } from "./helperV1";
 import { CLA, errorCodeToString, INS, PAYLOAD_TYPE, processErrorResponse } from "./common";
 
 export function serializePathv2(path) {
-  if (!path || path.length !== 5) {
-    throw new Error("Invalid path.");
-  }
-
   const buf = Buffer.alloc(20);
   // HACK : without the >>>,
   // the bitwise implicitly casts the result to be a signed int32,

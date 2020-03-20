@@ -210,23 +210,25 @@ export default class CosmosApp {
     }
   }
 
-  async getAddressAndPubKey(path, hrp) {
+  async getAddressAndPubKey(path, hrp, validateOnDevice) {
     const serializedPath = await this.serializePath(path);
     const data = Buffer.concat([CosmosApp.serializeHRP(hrp), serializedPath]);
-    return this.transport.send(CLA, INS.GET_ADDR_SECP256K1, 0, 0, data, [0x9000]).then(response => {
-      const errorCodeData = response.slice(-2);
-      const returnCode = errorCodeData[0] * 256 + errorCodeData[1];
+    return this.transport
+      .send(CLA, INS.GET_ADDR_SECP256K1, validateOnDevice ? 1 : 0, 0, data, [0x9000])
+      .then(response => {
+        const errorCodeData = response.slice(-2);
+        const returnCode = errorCodeData[0] * 256 + errorCodeData[1];
 
-      const compressedPk = Buffer.from(response.slice(0, 33));
-      const bech32Address = Buffer.from(response.slice(33, -2)).toString();
+        const compressedPk = Buffer.from(response.slice(0, 33));
+        const bech32Address = Buffer.from(response.slice(33, -2)).toString();
 
-      return {
-        bech32_address: bech32Address,
-        compressed_pk: compressedPk,
-        return_code: returnCode,
-        error_message: errorCodeToString(returnCode),
-      };
-    }, processErrorResponse);
+        return {
+          bech32_address: bech32Address,
+          compressed_pk: compressedPk,
+          return_code: returnCode,
+          error_message: errorCodeToString(returnCode),
+        };
+      }, processErrorResponse);
   }
 
   async signSendChunk(chunkIdx, chunkNum, chunk) {
